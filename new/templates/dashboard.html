@@ -8,14 +8,17 @@
 </head>
 <body>
     <header>
-        <h1>Welcome</h1>
+        <h1>Welcome, {{ customer['name'] }}</h1>
     </header>
     <nav>
         <ul>
             <li>Home</a></li>
-            <li>Profile</a></li>
-            <li>Orders</a></li>
-            <li>Logout</a></li>
+            <li>Profile</a></li> <!--Update details like username, email, password-->
+            <li>Orders</a></li> <!--Place an order page, see - old orders maybe?-->
+            <a href="{{ url_for('place_service_request', customer_id=customer['id']) }}">
+                <button>Go to Next Page</button>
+            </a>            
+            <li>Logout</a></li> <!-- Go back to dashboard-->
         </ul>
     </nav>
 </body>

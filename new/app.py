@@ -103,13 +103,10 @@ def login_customer():
         conn.close()
 
         if customer:
-            # return render_template('login.html')
-            return redirect(url_for('dashboard'))
-            # return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('dashboard', customer_id=customer['id']))
         else:
             flash('Invalid credentials. Please try again.')
     return render_template('customer_login.html')
-
 
 # Sign up route
 @app.route('/signup-customer', methods=['GET', 'POST'])
@@ -143,7 +140,68 @@ def admin_dashboard():
 # Admin dashboard route
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    customer_id = request.args.get('customer_id')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM customers WHERE id = ?', (customer_id))
+    customer = cursor.fetchone()
+    conn.close()
+
+    return render_template('dashboard.html', customer=customer)
+
+@app.route('/place_service_request', methods=['GET', 'POST'])
+def place_service_request():
+    if request.method == 'GET':
+        customer_id = request.args.get('customer_id')
+        print("CUSTOMER_ID is " + customer_id)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, name FROM services')
+        services = cursor.fetchall()
+        conn.close()
+
+        return render_template('customer/place_service_request_order.html',customer_id=customer_id, services=services)
+
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        service_id = request.form['service_id']
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO service_requests (service_id, customer_id) VALUES (?,?)', (service_id, customer_id))
+        conn.commit()
+            # Get the last inserted ID
+        id = cursor.lastrowid  # Assuming request_id is the primary key of the service_requests table
+        conn.close()
+    
+        flash('Request Submitted Successfully!')
+    
+    # Redirect to a new page to show booking details
+        return redirect(url_for('view_booking', request_id=id))
+    
+@app.route('/view_booking/<int:request_id>')
+def view_booking(request_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch the booking details using request_id
+    cursor.execute('SELECT sr.id, sr.service_id, sr.customer_id, s.name FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    booking_details = cursor.fetchone()
+    
+    conn.close()
+
+    if booking_details:
+        # Create a dictionary or similar structure for easier access
+        booking_info = {
+            'request_id': booking_details[0],
+            'service_id': booking_details[1],
+            'customer_id': booking_details[2],
+            'service_name': booking_details[3]
+        }
+        return render_template('customer/booking_details.html', booking=booking_info)
+    else:
+        flash('Booking not found.')
+        return redirect(url_for('dashboard'))  # Redirect to a safe page if not found
+
 
 @app.route('/pro_dashboard')
 def pro_dashboard():
