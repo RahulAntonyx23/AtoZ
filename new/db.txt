@@ -1,0 +1,67 @@
+-- Create a table for Admins (although no registration is needed, we can have a record)
+CREATE TABLE admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+
+-- Create a table for Service Professionals
+CREATE TABLE professionals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    date_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    service_type TEXT NOT NULL,
+    experience INTEGER,
+    status TEXT DEFAULT 'pending' -- 'pending', 'approved', 'blocked'
+);
+
+-- Create a table for Customers
+CREATE TABLE customers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+
+-- Create a table for Services
+CREATE TABLE services (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    time_required TEXT,
+    description TEXT
+);
+
+-- Create a table for Service Requests
+CREATE TABLE service_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    service_id INTEGER,
+    customer_id INTEGER,
+    professional_id INTEGER,
+    date_of_request DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_of_completion DATETIME,
+    service_status TEXT DEFAULT 'requested', -- 'requested', 'assigned', 'closed'
+    remarks TEXT,
+    FOREIGN KEY (service_id) REFERENCES services (id),
+    FOREIGN KEY (customer_id) REFERENCES customers (id),
+    FOREIGN KEY (professional_id) REFERENCES professionals (id)
+);
+
+-- Adding a Service
+INSERT INTO services (name, price, time_required, description) 
+VALUES ('AC Servicing', 100.0, '2 hours', 'Complete AC servicing including filter replacement');
+
+-- Creating Service Requests
+INSERT INTO service_requests (service_id, customer_id) 
+VALUES (1, 1);  -- Assuming service_id=1 and customer_id=1 exist
+
+-- Updating Service Professional Status:
+UPDATE professionals 
+SET status = 'approved' 
+WHERE id = 1;  -- Approve professional with id=1
+
+-- Leaving Review
+UPDATE service_requests 
+SET remarks = 'Excellent service!' 
+WHERE id = 1;  -- Assuming you want to add remarks for the service request with id=1
