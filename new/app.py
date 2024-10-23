@@ -38,12 +38,31 @@ def login_admin():
 
 
 
+@app.route('/login-pro', methods=['GET', 'POST'])
+def login_professional():
+    if request.method == 'POST':
+        name = request.form['username']
+        password = request.form['password']  # Keep it as plaintext
 
-@app.route('/pro-signin', methods=['GET', 'POST'])
-def pro_signin():
+        print(f"Attempting to log in with Username: {name} and Password: {password}")  # Debugging
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM professionals WHERE name = ? AND password = ?', (name, password))
+        professional = cursor.fetchone()
+        conn.close()
+
+        if professional:
+            return redirect(url_for('pro_dashboard', professional_id=professional['id']))
+        else:
+            flash('Invalid credentials. Please try again.')
+
+    return render_template('pro_login.html')
+
+@app.route('/signup-pro', methods=['GET', 'POST'])
+def signup_professional():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT id, name FROM services')
+    cursor.execute('SELECT name FROM services')
     services = cursor.fetchall()
     conn.close()
 
@@ -52,21 +71,20 @@ def pro_signin():
         description = request.form['description']
         service_type = request.form['service_type']
         experience = request.form['experience']
-        status = request.form['status']
+        password = request.form['password']  # Collecting the password
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO professionals (name, description, service_type, experience, status) 
+        cursor.execute('''INSERT INTO professionals (name, description, service_type, experience, password) 
                           VALUES (?, ?, ?, ?, ?)''',
-                       (name, description, service_type, experience, status))
+                       (name, description, service_type, experience, password))
         conn.commit()
         conn.close()
 
         flash('Professional added successfully!')
-        return redirect(url_for('pro_login'))
+        return redirect(url_for('login_professional'))
 
     return render_template('pro_signin.html', services=services)
-
 
 
 
@@ -129,7 +147,17 @@ def dashboard():
 
 @app.route('/pro_dashboard')
 def pro_dashboard():
-    return render_template('pro_dash.html')
+    professional_id = request.args.get('professional_id')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM professionals WHERE id = ?', (professional_id,))
+    professional = cursor.fetchone()
+    cursor.execute('SELECT * FROM services WHERE name = ?', (professional['service_type'],))
+    service = cursor.fetchone()
+    conn.close()
+    
+    return render_template('pro_dashboard.html', professional=professional, service=service)
+
 
 
 #serivces admin

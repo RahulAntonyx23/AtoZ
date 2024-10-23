@@ -10,22 +10,18 @@
     <form method="POST">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
         <label for="description">Description:</label>
         <textarea id="description" name="description"></textarea><br>
         <label for="service_type">Service Type:</label>
         <select id="service_type" name="service_type" required>
             {% for service in services %}
-            <option value="{{ service['id'] }}">{{ service['name'] }}</option>
+            <option value="{{ service['name'] }}">{{ service['name'] }}</option>
             {% endfor %}
         </select><br>
         <label for="experience">Experience (years):</label>
         <input type="number" id="experience" name="experience" required><br>
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-            <option value="pending">Pending</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-        </select><br>
         <button type="submit">Add Professional</button>
     </form>
     {% with messages = get_flashed_messages() %}
