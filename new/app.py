@@ -37,27 +37,35 @@ def login_admin():
     return render_template('admin_login.html')
 
 
-@app.route('/login-pro', methods=['GET', 'POST'])
-def login_admin():
+
+
+@app.route('/pro-signin', methods=['GET', 'POST'])
+def pro_signin():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, name FROM services')
+    services = cursor.fetchall()
+    conn.close()
+
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']  # Keep it as plaintext
-        
-        print(f"Attempting to log in with Username: {username} and Password: {password}")  # Debugging
+        name = request.form['name']
+        description = request.form['description']
+        service_type = request.form['service_type']
+        experience = request.form['experience']
+        status = request.form['status']
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM professionals WHERE username = ? AND password = ?', (username, password))
-        admin = cursor.fetchone()
+        cursor.execute('''INSERT INTO professionals (name, description, service_type, experience, status) 
+                          VALUES (?, ?, ?, ?, ?)''',
+                       (name, description, service_type, experience, status))
+        conn.commit()
         conn.close()
 
-        if admin:
-            return redirect(url_for('pro_dashboard'))
-        else:
-            flash('Invalid credentials. Please try again.')
+        flash('Professional added successfully!')
+        return redirect(url_for('pro_login'))
 
-    return render_template('pro_login.html')
-
+    return render_template('pro_signin.html', services=services)
 
 
 
@@ -118,6 +126,43 @@ def admin_dashboard():
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/pro_dashboard')
+def pro_dashboard():
+    return render_template('pro_dash.html')
+
+
+#serivces admin
+@app.route('/add-service', methods=['GET', 'POST'])
+def add_service():
+    if request.method == 'POST':
+        name = request.form['name']
+        price = request.form['price']
+        time_required = request.form['time_required']
+        description = request.form['description']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO services (name, price, time_required, description) VALUES (?, ?, ?, ?)',
+                       (name, price, time_required, description))
+        conn.commit()
+        conn.close()
+
+        flash('Service added successfully!')
+        return redirect(url_for('add_service'))
+
+    return render_template('add_service.html')
+
+@app.route('/services')
+def view_services():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM services')
+    services = cursor.fetchall()
+    conn.close()
+    return render_template('view_services.html', services=services)
+
+
 
 @app.route('/test-db')
 def test_db():

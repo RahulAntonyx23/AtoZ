@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Services</title>
+</head>
+<body>
+    <h1>Select a Service</h1>
+    <form method="post">
+        <select name="service" id="service">
+            {% for service in services %}
+            <option value="{{ service['id'] }}">{{ service['name'] }} - ₹{{ service['price'] }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
