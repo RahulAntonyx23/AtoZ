@@ -202,6 +202,75 @@ def view_booking(request_id):
         flash('Booking not found.')
         return redirect(url_for('dashboard'))  # Redirect to a safe page if not found
 
+@app.route('/view_requests/<int:customer_id>')
+def view_requests(customer_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all service requests for the given customer_id
+    cursor.execute('''
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id 
+        FROM service_requests sr 
+        JOIN services s ON sr.service_id = s.id 
+        WHERE sr.customer_id = ?
+    ''', (customer_id,))
+    requests = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('customer/view_requests.html', requests=requests)
+
+@app.route('/view_request_pro/<string:service_type>')
+def view_request_pro(service_type,pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT name FROM professionals WHERE id = ?', (pro_id,))
+    
+    # Fetch all service requests for the given customer_id
+    cursor.execute('''
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status 
+        FROM service_requests sr 
+        JOIN services s ON sr.service_id = s.id 
+        WHERE s.name = ?
+    ''', (service_type,))
+    requests = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
+
+
+@app.route('/take_request/<int:request_id>', methods=['POST'])
+def take_request(request_id,pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE service_requests SET professional_id = ? WHERE id = ?', (pro_id, request_id))
+    
+    cursor.execute('UPDATE service_requests SET service_status = "In Progress" WHERE id = ?', (request_id,))
+    cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    service_type = cursor.fetchone()['service_type']
+    conn.commit()
+
+    
+    conn.close()
+    
+    
+    return redirect(url_for('view_request_pro', service_type=service_type,pro_id=pro_id))
+
+@app.route('/complete_request/<int:request_id>', methods=['POST'])
+def complete_request(request_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('UPDATE service_requests SET service_status = "Completed" WHERE id = ?', (request_id,))
+    cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    service_type = cursor.fetchone()['service_type']
+    conn.commit()
+    conn.close()
+    
+    
+    return redirect(url_for('view_request_pro', service_type=service_type))
+
 
 @app.route('/pro_dashboard')
 def pro_dashboard():
@@ -214,7 +283,7 @@ def pro_dashboard():
     service = cursor.fetchone()
     conn.close()
     
-    return render_template('pro_dashboard.html', professional=professional, service=service)
+    return render_template('professional/pro_dashboard.html', professional=professional, service=service)
 
 
 
