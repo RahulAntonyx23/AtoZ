@@ -8,10 +8,8 @@
 <body>
     <h1>Welcome, {{ professional['name'] }}</h1>
     <p><strong>Service Type:</strong> {{ service['name'] }}</p>
-    <a href="{{ url_for('view_request_pro', service_type=service['name'],pro_id=professional['id']) }}">
+    <a href="{{ url_for('view_request_pro', service_type=service['name'], pro_id=professional['id']) }}">
         <button>See Requests</button>
     </a>
-    
-
 </body>
 </html>

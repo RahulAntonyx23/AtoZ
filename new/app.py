@@ -220,13 +220,12 @@ def view_requests(customer_id):
 
     return render_template('customer/view_requests.html', requests=requests)
 
-@app.route('/view_request_pro/<string:service_type>')
-def view_request_pro(service_type,pro_id):
+@app.route('/view_request_pro/<string:service_type>/<int:pro_id>')
+def view_request_pro(service_type, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT name FROM professionals WHERE id = ?', (pro_id,))
     
-    # Fetch all service requests for the given customer_id
+    # Fetch all service requests for the given service type
     cursor.execute('''
         SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status 
         FROM service_requests sr 
@@ -240,36 +239,42 @@ def view_request_pro(service_type,pro_id):
     return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
 
 
-@app.route('/take_request/<int:request_id>', methods=['POST'])
-def take_request(request_id,pro_id):
+
+@app.route('/take_request/<int:request_id>/<int:pro_id>', methods=['POST'])
+def take_request(request_id, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE service_requests SET professional_id = ? WHERE id = ?', (pro_id, request_id))
     
-    cursor.execute('UPDATE service_requests SET service_status = "In Progress" WHERE id = ?', (request_id,))
+    # Update the service request with the professional's ID and change status
+    cursor.execute('UPDATE service_requests SET professional_id = ?, service_status = "In Progress" WHERE id = ?', (pro_id, request_id))
     cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
     service_type = cursor.fetchone()['service_type']
     conn.commit()
-
-    
     conn.close()
     
-    
-    return redirect(url_for('view_request_pro', service_type=service_type,pro_id=pro_id))
+    # Redirect back to the view requests page
+    return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))  # Replace with actual service type
 
-@app.route('/complete_request/<int:request_id>', methods=['POST'])
-def complete_request(request_id):
+
+
+@app.route('/complete_request/<int:request_id>/<int:pro_id>', methods=['POST'])
+def complete_request(request_id, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Update the service request status to "Completed"
     cursor.execute('UPDATE service_requests SET service_status = "Completed" WHERE id = ?', (request_id,))
+    
+    # Fetch the service type for the request
     cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
     service_type = cursor.fetchone()['service_type']
+    
     conn.commit()
     conn.close()
     
-    
-    return redirect(url_for('view_request_pro', service_type=service_type))
+    # Redirect back to the view requests page with service type and professional ID
+    return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))
+
 
 
 @app.route('/pro_dashboard')
@@ -277,13 +282,19 @@ def pro_dashboard():
     professional_id = request.args.get('professional_id')
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Fetch professional details
     cursor.execute('SELECT * FROM professionals WHERE id = ?', (professional_id,))
     professional = cursor.fetchone()
+    
+    # Fetch service details based on the professional's service type
     cursor.execute('SELECT * FROM services WHERE name = ?', (professional['service_type'],))
     service = cursor.fetchone()
+    
     conn.close()
     
     return render_template('professional/pro_dashboard.html', professional=professional, service=service)
+
 
 
 
