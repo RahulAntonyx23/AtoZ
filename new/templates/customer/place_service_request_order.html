@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Service Request</title>
+</head>
+<body>
+    <form action="/place_service_request" method="POST">
+        <p>Hello {{ customer_id }}</p>
+        <label for="">Type of Service Required: </label>
+        <select id="service" name="service_id">
+            {% for service in services %}
+                <option value="{{ service[0] }}">{{ service[1] }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="customer_id" value="{{ customer_id }}">
+        <button type="submit">Submit New Request</button>
+    </form>
+
+</body>
+</html>
