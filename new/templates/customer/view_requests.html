@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Requests</title>
+   
+</head>
+<body>
+
+    <h1>Service Requests</h1>
+
+    {% if requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                   
+                    <th>Service Name</th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                       
+                        <td>{{ request.service_name }}</td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service requests found for this customer.</p>
+    {% endif %}
+
+</body>
+</html>

@@ -16,8 +16,14 @@
             <li>Profile</a></li> <!--Update details like username, email, password-->
             <li>Orders</a></li> <!--Place an order page, see - old orders maybe?-->
             <a href="{{ url_for('place_service_request', customer_id=customer['id']) }}">
-                <button>Go to Next Page</button>
-            </a>            
+                <button>Place new Request</button>
+            </a> 
+            <li>See Requests</a></li> <!--View requests made by the customer-->
+                <a href="{{ url_for('view_requests', customer_id=customer['id']) }}">
+                    <button>See Requests</button>
+                </a>
+            </li>
+                   
             <li>Logout</a></li> <!-- Go back to dashboard-->
         </ul>
     </nav>

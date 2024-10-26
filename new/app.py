@@ -135,7 +135,7 @@ def signup_customer():
 # Admin dashboard route
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    return render_template('admin-dash.html')
+    return render_template('admin/admin-dash.html')
 
 # Admin dashboard route
 @app.route('/dashboard')
@@ -202,19 +202,99 @@ def view_booking(request_id):
         flash('Booking not found.')
         return redirect(url_for('dashboard'))  # Redirect to a safe page if not found
 
+@app.route('/view_requests/<int:customer_id>')
+def view_requests(customer_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all service requests for the given customer_id
+    cursor.execute('''
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id 
+        FROM service_requests sr 
+        JOIN services s ON sr.service_id = s.id 
+        WHERE sr.customer_id = ?
+    ''', (customer_id,))
+    requests = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('customer/view_requests.html', requests=requests)
+
+@app.route('/view_request_pro/<string:service_type>/<int:pro_id>')
+def view_request_pro(service_type, pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all service requests for the given service type
+    cursor.execute('''
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status 
+        FROM service_requests sr 
+        JOIN services s ON sr.service_id = s.id 
+        WHERE s.name = ?
+    ''', (service_type,))
+    requests = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
+
+
+
+@app.route('/take_request/<int:request_id>/<int:pro_id>', methods=['POST'])
+def take_request(request_id, pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Update the service request with the professional's ID and change status
+    cursor.execute('UPDATE service_requests SET professional_id = ?, service_status = "In Progress" WHERE id = ?', (pro_id, request_id))
+    cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    service_type = cursor.fetchone()['service_type']
+    conn.commit()
+    conn.close()
+    
+    # Redirect back to the view requests page
+    return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))  # Replace with actual service type
+
+
+
+@app.route('/complete_request/<int:request_id>/<int:pro_id>', methods=['POST'])
+def complete_request(request_id, pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Update the service request status to "Completed"
+    cursor.execute('UPDATE service_requests SET service_status = "Completed" WHERE id = ?', (request_id,))
+    
+    # Fetch the service type for the request
+    cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    service_type = cursor.fetchone()['service_type']
+    
+    conn.commit()
+    conn.close()
+    
+    # Redirect back to the view requests page with service type and professional ID
+    return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))
+
+
 
 @app.route('/pro_dashboard')
 def pro_dashboard():
     professional_id = request.args.get('professional_id')
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Fetch professional details
     cursor.execute('SELECT * FROM professionals WHERE id = ?', (professional_id,))
     professional = cursor.fetchone()
+    
+    # Fetch service details based on the professional's service type
     cursor.execute('SELECT * FROM services WHERE name = ?', (professional['service_type'],))
     service = cursor.fetchone()
+    
     conn.close()
     
-    return render_template('pro_dashboard.html', professional=professional, service=service)
+    return render_template('professional/pro_dashboard.html', professional=professional, service=service)
+
 
 
 
@@ -235,9 +315,46 @@ def add_service():
         conn.close()
 
         flash('Service added successfully!')
-        return redirect(url_for('add_service'))
+        return redirect(url_for('admin/add_service'))
 
     return render_template('add_service.html')
+
+@app.route('/professionals', methods=['GET', 'POST'])
+def view_professionals():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        professional_id = request.form['professional_id']
+        cursor.execute('UPDATE professionals SET status = "approved" WHERE id = ?', (professional_id,))
+        conn.commit()
+    
+    cursor.execute('SELECT * FROM professionals')
+    professionals = cursor.fetchall()
+    conn.close()
+    return render_template('admin/view_professionals.html', professionals=professionals)
+
+@app.route('/view-people', methods=['GET', 'POST'])
+def view_people():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        person_type = request.form['person_type']
+        person_id = request.form['person_id']
+        if person_type == 'customer':
+            cursor.execute('DELETE FROM customers WHERE id = ?', (person_id,))
+        elif person_type == 'professional':
+            cursor.execute('DELETE FROM professionals WHERE id = ?', (person_id,))
+        conn.commit()
+    
+    cursor.execute('SELECT * FROM customers')
+    customers = cursor.fetchall()
+    cursor.execute('SELECT * FROM professionals')
+    professionals = cursor.fetchall()
+    conn.close()
+    return render_template('admin/view_people.html', customers=customers, professionals=professionals)
+
+
 
 @app.route('/services')
 def view_services():
@@ -247,7 +364,6 @@ def view_services():
     services = cursor.fetchall()
     conn.close()
     return render_template('view_services.html', services=services)
-
 
 
 @app.route('/test-db')
