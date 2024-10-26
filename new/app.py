@@ -135,7 +135,7 @@ def signup_customer():
 # Admin dashboard route
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    return render_template('admin-dash.html')
+    return render_template('admin/admin-dash.html')
 
 # Admin dashboard route
 @app.route('/dashboard')
@@ -315,9 +315,46 @@ def add_service():
         conn.close()
 
         flash('Service added successfully!')
-        return redirect(url_for('add_service'))
+        return redirect(url_for('admin/add_service'))
 
     return render_template('add_service.html')
+
+@app.route('/professionals', methods=['GET', 'POST'])
+def view_professionals():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        professional_id = request.form['professional_id']
+        cursor.execute('UPDATE professionals SET status = "approved" WHERE id = ?', (professional_id,))
+        conn.commit()
+    
+    cursor.execute('SELECT * FROM professionals')
+    professionals = cursor.fetchall()
+    conn.close()
+    return render_template('admin/view_professionals.html', professionals=professionals)
+
+@app.route('/view-people', methods=['GET', 'POST'])
+def view_people():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        person_type = request.form['person_type']
+        person_id = request.form['person_id']
+        if person_type == 'customer':
+            cursor.execute('DELETE FROM customers WHERE id = ?', (person_id,))
+        elif person_type == 'professional':
+            cursor.execute('DELETE FROM professionals WHERE id = ?', (person_id,))
+        conn.commit()
+    
+    cursor.execute('SELECT * FROM customers')
+    customers = cursor.fetchall()
+    cursor.execute('SELECT * FROM professionals')
+    professionals = cursor.fetchall()
+    conn.close()
+    return render_template('admin/view_people.html', customers=customers, professionals=professionals)
+
+
 
 @app.route('/services')
 def view_services():
@@ -327,7 +364,6 @@ def view_services():
     services = cursor.fetchall()
     conn.close()
     return render_template('view_services.html', services=services)
-
 
 
 @app.route('/test-db')

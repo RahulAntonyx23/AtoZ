@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Professionals</title>
+</head>
+<body>
+    <h1>Professionals</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Date Created</th>
+                <th>Description</th>
+                <th>Service Type</th>
+                <th>Experience</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for professional in professionals %}
+            <tr>
+                <td>{{ professional['id'] }}</td>
+                <td>{{ professional['name'] }}</td>
+                <td>{{ professional['date_created'] }}</td>
+                <td>{{ professional['description'] }}</td>
+                <td>{{ professional['service_type'] }}</td>
+                <td>{{ professional['experience'] }}</td>
+                <td>{{ professional['status'] }}</td>
+                <td>
+                    {% if professional['status'] != 'approved' %}
+                    <form method="POST">
+                        <input type="hidden" name="professional_id" value="{{ professional['id'] }}">
+                        <button type="submit">Approve</button>
+                    </form>
+                    {% else %}
+                    Approved
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

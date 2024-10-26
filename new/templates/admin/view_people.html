@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Customers and Professionals</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .table-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #dc3545;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customers and Professionals</h1>
+        
+        <div class="table-container">
+            <h2>Customers</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>{{ customer['id'] }}</td>
+                        <td>{{ customer['name'] }}</td>
+                        <td>{{ customer['email'] }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('view_people') }}">
+                                <input type="hidden" name="person_type" value="customer">
+                                <input type="hidden" name="person_id" value="{{ customer['id'] }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="table-container">
+            <h2>Professionals</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Date Created</th>
+                        <th>Description</th>
+                        <th>Service Type</th>
+                        <th>Experience</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for professional in professionals %}
+                    <tr>
+                        <td>{{ professional['id'] }}</td>
+                        <td>{{ professional['name'] }}</td>
+                        <td>{{ professional['date_created'] }}</td>
+                        <td>{{ professional['description'] }}</td>
+                        <td>{{ professional['service_type'] }}</td>
+                        <td>{{ professional['experience'] }}</td>
+                        <td>{{ professional['status'] }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('view_people') }}">
+                                <input type="hidden" name="person_type" value="professional">
+                                <input type="hidden" name="person_id" value="{{ professional['id'] }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
