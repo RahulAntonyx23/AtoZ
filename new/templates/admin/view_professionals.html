@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Professionals</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Professionals</h1>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date Created</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Service Type</th>
+                    <th scope="col">Experience</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in professionals %}
+                <tr>
+                    <td>{{ professional['id'] }}</td>
+                    <td>{{ professional['name'] }}</td>
+                    <td>{{ professional['date_created'] }}</td>
+                    <td>{{ professional['description'] }}</td>
+                    <td>{{ professional['service_type'] }}</td>
+                    <td>{{ professional['experience'] }}</td>
+                    <td>{{ professional['status'] }}</td>
+                    <td>
+                        {% if professional['status'] != 'approved' %}
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="professional_id" value="{{ professional['id'] }}">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        {% else %}
+                        <span class="badge badge-success">Approved</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
