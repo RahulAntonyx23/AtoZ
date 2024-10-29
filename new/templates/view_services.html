@@ -1,19 +1,26 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Services</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body>
-    <h1>Select a Service</h1>
-    <form method="post">
-        <select name="service" id="service">
-            {% for service in services %}
-            <option value="{{ service['id'] }}">{{ service['name'] }} - ₹{{ service['price'] }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Submit</button>
-    </form>
+    <div class="container mt-5">
+        <h1 class="mb-4">Select a Service</h1>
+        <form method="post">
+            <div class="form-group">
+                <label for="service">Type of Service Required:</label>
+                <select class="form-control" id="service" name="service">
+                    {% for service in services %}
+                    <option value="{{ service['id'] }}">{{ service['name'] }} - ₹{{ service['price'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 </body>
 </html>

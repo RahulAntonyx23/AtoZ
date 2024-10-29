@@ -1,8 +1,12 @@
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Needed for flashing messages
+app.secret_key = 'your_secret_key'
+Bootstrap(app)
+  
 
 # Database connection function
 def get_db_connection():
@@ -209,16 +213,21 @@ def view_requests(customer_id):
     
     # Fetch all service requests for the given customer_id
     cursor.execute('''
-        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id 
-        FROM service_requests sr 
-        JOIN services s ON sr.service_id = s.id 
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id, sr.service_status as status, p.name as professional_name
+        FROM service_requests sr
+        JOIN services s ON sr.service_id = s.id
+        LEFT JOIN professionals p ON sr.professional_id = p.id
         WHERE sr.customer_id = ?
     ''', (customer_id,))
     requests = cursor.fetchall()
     
+    print("DEBUG: Requests fetched -", requests)  # Debugging line
+    
     conn.close()
-
     return render_template('customer/view_requests.html', requests=requests)
+
+
+
 
 @app.route('/view_request_pro/<string:service_type>/<int:pro_id>')
 def view_request_pro(service_type, pro_id):
@@ -317,7 +326,7 @@ def add_service():
         flash('Service added successfully!')
         return redirect(url_for('add_service'))
 
-    return render_template('add_service.html')
+    return render_template('admin/add_service.html')
 
 @app.route('/services')
 def view_services():

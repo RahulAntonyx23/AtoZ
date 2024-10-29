@@ -1,3 +1,21 @@
-<h1>Booking Confirmation</h1>
-<p>Request ID: {{ booking.request_id }}</p>
-<p>Service: {{ booking.service_name }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Booking Confirmation</h1>
+            </div>
+            <div class="card-body">
+                <p class="card-text"><strong>Request ID:</strong> {{ booking.request_id }}</p>
+                <p class="card-text"><strong>Service:</strong> {{ booking.service_name }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,36 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Requests</title>
-   
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body>
-
-    <h1>Service Requests</h1>
-
-    {% if requests %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Request ID</th>
-                   
-                    <th>Service Name</th>
-                   
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in requests %}
+    <div class="container">
+        <h1 class="my-4">Service Requests</h1>
+        
+        <h2>Requests</h2>
+        {% set has_requested = requests | selectattr('status', 'equalto', 'requested') | list %}
+        {% if has_requested %}
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Request ID</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in has_requested %}
                     <tr>
                         <td>{{ request.id }}</td>
-                       
                         <td>{{ request.service_name }}</td>
-                        
+                        <td>{{ request.status }}</td>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No service requests found for this customer.</p>
-    {% endif %}
-
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="alert alert-info">No requested services found for this customer.</p>
+        {% endif %}
+        
+        <h2>In Progress</h2>
+        {% set has_in_progress = requests | selectattr('status', 'equalto', 'In Progress') | list %}
+        {% if has_in_progress %}
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Request ID</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Professional Assigned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in has_in_progress %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.service_name }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>{{ request.professional_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="alert alert-info">No services in progress found for this customer.</p>
+        {% endif %}
+        
+        <h2>Completed</h2>
+        {% set has_completed = requests | selectattr('status', 'equalto', 'Completed') | list %}
+        {% if has_completed %}
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Request ID</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Professional Assigned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in has_completed %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.service_name }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>{{ request.professional_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="alert alert-info">No completed services found for this customer.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Place Service Request</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body>
-    <form action="/place_service_request" method="POST">
-        <p>Hello {{ customer_id }}</p>
-        <label for="">Type of Service Required: </label>
-        <select id="service" name="service_id">
-            {% for service in services %}
-                <option value="{{ service[0] }}">{{ service[1] }}</option>
-            {% endfor %}
-        </select>
-        <input type="hidden" name="customer_id" value="{{ customer_id }}">
-        <button type="submit">Submit New Request</button>
-    </form>
-
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Place Service Request</h1>
+            </div>
+            <div class="card-body">
+                <form action="/place_service_request" method="POST">
+                    <p class="card-text">Hello {{ customer_name }}</p>
+                    <div class="form-group">
+                        <label for="service">Type of Service Required:</label>
+                        <select class="form-control" id="service" name="service_id">
+                            {% for service in services %}
+                                <option value="{{ service[0] }}">{{ service[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="customer_id" value="{{ customer_id }}">
+                    <button type="submit" class="btn btn-primary">Submit New Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

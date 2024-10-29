@@ -4,44 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Requests for {{ service_type }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body>
-
-    <h1>Service Requests for {{ service_type }}</h1>
-
-    {% if requests %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Request ID</th>
-                    <th>Service ID</th>
-                    <th>Service Name</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in requests %}
-                    <tr>
-                        <td>{{ request.id }}</td>
-                        <td>{{ request.service_id }}</td>
-                        <td>{{ request.service_name }}</td>
-                        <td>{{ request.service_status }}</td>
-                        <td>
-                            <form action="{{ url_for('take_request', request_id=request.id, pro_id=pro_id) }}" method="POST">
-                                <button type="submit">Take Request</button>
-                            </form>
-                            <form action="{{ url_for('complete_request', request_id=request.id, pro_id=pro_id) }}" method="POST">
-                                <button type="submit">Close Request</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No service requests found for this service type.</p>
-    {% endif %}
-
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Service Requests for {{ service_type }}</h1>
+            </div>
+            <div class="card-body">
+                {% if requests %}
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Request ID</th>
+                                <th scope="col">Service ID</th>
+                                <th scope="col">Service Name</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in requests %}
+                            <tr>
+                                <td>{{ request.id }}</td>
+                                <td>{{ request.service_id }}</td>
+                                <td>{{ request.service_name }}</td>
+                                <td>{{ request.service_status }}</td>
+                                <td>
+                                    <form action="{{ url_for('take_request', request_id=request.id, pro_id=pro_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-primary">Take Request</button>
+                                    </form>
+                                    <form action="{{ url_for('complete_request', request_id=request.id, pro_id=pro_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-success">Close Request</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="alert alert-info">No service requests found for this service type.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>
