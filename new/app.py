@@ -126,7 +126,7 @@ def signup_customer():
             cursor.execute('INSERT INTO customers (name, email, password) VALUES (?, ?, ?)', (name, email, password))
             conn.commit()
             flash('Sign up successful! You can log in now.')
-            return redirect(url_for('login'))
+            return redirect(url_for('login_customer'))
         except sqlite3.IntegrityError:
             flash('Email already registered. Please use a different email.')
         finally:
