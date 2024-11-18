@@ -42,6 +42,8 @@ def login_admin():
 
 
 
+
+
 @app.route('/login-pro', methods=['GET', 'POST'])
 def login_professional():
     if request.method == 'POST':
@@ -89,6 +91,7 @@ def signup_professional():
         return redirect(url_for('login_professional'))
 
     return render_template('pro_signin.html', services=services)
+
 
 
 
@@ -284,6 +287,24 @@ def view_request_pro(service_type, pro_id):
     conn.close()
 
     return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
+
+@app.route('/professional_reviews/<int:pro_id>', methods=['GET'])
+def professional_reviews(pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all reviews for the given professional ID
+    cursor.execute('''
+        SELECT sr.id, sr.remarks, sr.service_rating, s.name as service_name
+        FROM service_requests sr
+        JOIN services s ON sr.service_id = s.id
+        WHERE sr.professional_id = ? AND sr.remarks IS NOT NULL
+    ''', (pro_id,))
+    reviews = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('professional/professional_reviews.html', reviews=reviews)
 
 
 
