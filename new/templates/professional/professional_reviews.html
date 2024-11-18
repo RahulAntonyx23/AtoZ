@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Reviews</title>
+   
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <h1>Professional Reviews</h1>
+    <ul class="list-group">
+        {% for review in reviews %}
+            <li class="list-group-item">
+                <p>Review ID: {{ review[0] }}</p>
+                <p>Service Name: {{ review[3] }}</p>
+                <p>Rating: {{ review[2] }}</p>
+                <p>Review: {{ review[1] }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

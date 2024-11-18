@@ -42,6 +42,8 @@ def login_admin():
 
 
 
+
+
 @app.route('/login-pro', methods=['GET', 'POST'])
 def login_professional():
     if request.method == 'POST':
@@ -89,6 +91,7 @@ def signup_professional():
         return redirect(url_for('login_professional'))
 
     return render_template('pro_signin.html', services=services)
+
 
 
 
@@ -213,7 +216,7 @@ def view_requests(customer_id):
     
     # Fetch all service requests for the given customer_id
     cursor.execute('''
-        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id, sr.service_status as status, p.name as professional_name
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id, sr.service_status as status, sr.service_rating as rating, p.name as professional_name
         FROM service_requests sr
         JOIN services s ON sr.service_id = s.id
         LEFT JOIN professionals p ON sr.professional_id = p.id
@@ -223,9 +226,47 @@ def view_requests(customer_id):
     
     print("DEBUG: Requests fetched -", requests)  # Debugging line
     
+    requests_list = [dict(request) for request in requests]
+    print("DEBUG: Requests fetched -", requests_list)  # Debugging line
+    
     conn.close()
     return render_template('customer/view_requests.html', requests=requests)
 
+@app.route('/review/<int:request_id>', methods=['GET'])
+def review(request_id):
+    print(f"Review ID: {request_id}")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    print(f"Executing query: SELECT * FROM service_requests WHERE id = {request_id}")
+    cursor.execute('SELECT * FROM service_requests WHERE id = ?', (request_id,))
+    request_data = cursor.fetchone()
+    
+    # Convert to dictionary for easier readability?
+    request_data_dict = dict(request_data) if request_data else None
+    print(f"Request Data: {request_data_dict}")  # Debugging line
+    
+    conn.close()
+
+    if request_data is None:
+        return "Request not found", 404
+
+    return render_template('review.html', title="Review", request=request_data_dict)
+
+
+@app.route('/submit_review/<int:request_id>', methods=['POST'])
+def submit_review(request_id):
+    rating = int(request.form.get('new_rating'))
+    review_text = request.form.get('review_text')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT customer_id FROM service_requests where id =?', (request_id,))
+    customer_id = cursor.fetchone()[0]
+    cursor.execute('''UPDATE service_requests 
+                   SET service_rating = ?, remarks = ?
+                   WHERE id = ?''', (rating, review_text, request_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('view_requests', customer_id=customer_id))
 
 
 
@@ -246,6 +287,24 @@ def view_request_pro(service_type, pro_id):
     conn.close()
 
     return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
+
+@app.route('/professional_reviews/<int:pro_id>', methods=['GET'])
+def professional_reviews(pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all reviews for the given professional ID
+    cursor.execute('''
+        SELECT sr.id, sr.remarks, sr.service_rating, s.name as service_name
+        FROM service_requests sr
+        JOIN services s ON sr.service_id = s.id
+        WHERE sr.professional_id = ? AND sr.remarks IS NOT NULL
+    ''', (pro_id,))
+    reviews = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('professional/professional_reviews.html', reviews=reviews)
 
 
 
