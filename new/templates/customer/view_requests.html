@@ -85,6 +85,7 @@
                         <th scope="col">Service Name</th>
                         <th scope="col">Status</th>
                         <th scope="col">Professional Assigned</th>
+                        <th scope="col">Date of Completion</th>
                         <th scope="col">Service Rating</th>
                     </tr>
                 </thead>
@@ -95,6 +96,7 @@
                         <td>{{ request.service_name }}</td>
                         <td>{{ request.status }}</td>
                         <td>{{ request.professional_name }}</td>
+                        <td>{{ request.date_completed }}</td>
                         <td>
                             {% if request.rating == 0 %}
                                 <a class="btn btn-primary" href="{{ url_for('review', request_id=request.id) }}">

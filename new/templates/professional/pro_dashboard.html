@@ -12,11 +12,15 @@
     <p><strong>Service Type:</strong> {{ service['name'] }}</p>
     {% if professional['status'] == 'approved' %}
         <a href="{{ url_for('view_request_pro', service_type=service['name'], pro_id=professional['id']) }}">
-            <button>See Requests</button>
+            <button style="margin: auto;">See Requests</button>
         </a>
         <a href="{{ url_for('professional_reviews', pro_id=professional['id']) }}">
-            <button>See Reviews</button>
+            <button style="margin: auto;">See Reviews</button>
         </a>
+        <a href="{{ url_for('close_request', service_type=service['name'], pro_id=professional['id']) }}">
+            <button style="margin: auto;">Close Request</button>
+        </a>
+
     {% else %}
         <p>Your account is not approved yet. Please contact the administrator.</p>
     {% endif %}

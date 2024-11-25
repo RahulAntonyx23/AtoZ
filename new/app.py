@@ -77,20 +77,21 @@ def signup_professional():
         description = request.form['description']
         service_type = request.form['service_type']
         experience = request.form['experience']
+        city = request.form['city']
         password = request.form['password']  # Collecting the password
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO professionals (name, description, service_type, experience, password) 
-                          VALUES (?, ?, ?, ?, ?)''',
-                       (name, description, service_type, experience, password))
+        cursor.execute('''INSERT INTO professionals (name, description, service_type, experience, city, password) 
+                          VALUES (?, ?, ?, ?, ?, ?)''',
+                       (name, description, service_type, experience, city, password))
         conn.commit()
         conn.close()
 
         flash('Professional added successfully!')
         return redirect(url_for('login_professional'))
 
-    return render_template('pro_signin.html', services=services)
+    return render_template('pro_signup.html', services=services)
 
 
 
@@ -122,11 +123,12 @@ def signup_customer():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+        city = request.form['city']
 
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute('INSERT INTO customers (name, email, password) VALUES (?, ?, ?)', (name, email, password))
+            cursor.execute('INSERT INTO customers (name, email, password, city) VALUES (?, ?, ?, ?)', (name, email, password, city))
             conn.commit()
             flash('Sign up successful! You can log in now.')
             return redirect(url_for('login_customer'))
@@ -182,17 +184,22 @@ def place_service_request():
         professional_id = request.form['professional_id']
         conn = get_db_connection()
         cursor = conn.cursor()
+        cursor.execute('SELECT service_type FROM professionals WHERE id = ?', (professional_id,))
+        service_type = cursor.fetchone()[0]
+        cursor.execute('SELECT id FROM services WHERE name = ?', (service_type,))
+        service_id = cursor.fetchone()[0]
+        
         
         # Create service request
-        cursor.execute('INSERT INTO service_requests (customer_id, professional_id) VALUES (?, ?)', (customer_id, professional_id))
+        cursor.execute('INSERT INTO service_requests (service_id, customer_id, professional_id, service_status, date_of_request) VALUES (?, ?, ?, "requested", CURRENT_TIMESTAMP)', (service_id, customer_id, professional_id))
         conn.commit()
         request_id = cursor.lastrowid
         conn.close()
         
         flash('Service request successfully placed!')
-        return redirect(url_for('view_booking', request_id=request_id))
+        return redirect(url_for('view_requests', customer_id=customer_id))
 
-@app.route('/view_booking/<int:request_id>')
+@app.route('/view_booking/<int:customer_id>/<int:request_id>')
 def view_booking(request_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -250,13 +257,13 @@ def review(request_id):
     print(f"Review ID: {request_id}")
     conn = get_db_connection()
     cursor = conn.cursor()
-    print(f"Executing query: SELECT * FROM service_requests WHERE id = {request_id}")
+   
     cursor.execute('SELECT * FROM service_requests WHERE id = ?', (request_id,))
     request_data = cursor.fetchone()
     
     # Convert to dictionary for easier readability?
     request_data_dict = dict(request_data) if request_data else None
-    print(f"Request Data: {request_data_dict}")  # Debugging line
+ 
     
     conn.close()
 
@@ -288,18 +295,39 @@ def view_request_pro(service_type, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Fetch all service requests for the given service type
+    # Fetch all service requests for the given service type and professional ID
     cursor.execute('''
-        SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status 
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status, c.name as customer_name
         FROM service_requests sr 
-        JOIN services s ON sr.service_id = s.id 
-        WHERE s.name = ?
-    ''', (service_type,))
+        JOIN services s ON sr.service_id = s.id
+        JOIN customers c ON sr.customer_id = c.id
+        WHERE s.name = ? AND sr.professional_id = ? AND sr.service_status = "requested"
+    ''', (service_type, pro_id))
     requests = cursor.fetchall()
     
     conn.close()
 
     return render_template('professional/view_request_pro.html', requests=requests, pro_id=pro_id)
+
+@app.route('/close_request/<string:service_type>/<int:pro_id>')
+def close_request(service_type, pro_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all service requests for the given service type and professional ID
+    cursor.execute('''
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.service_status 
+        FROM service_requests sr 
+        JOIN services s ON sr.service_id = s.id 
+        WHERE s.name = ? AND sr.professional_id = ? AND sr.service_status = "In Progress"
+    ''', (service_type, pro_id))
+    requests = cursor.fetchall()
+    
+    conn.close()
+
+    return render_template('professional/close_request.html', requests=requests, pro_id=pro_id)
+
+
 
 @app.route('/professional_reviews/<int:pro_id>', methods=['GET'])
 def professional_reviews(pro_id):
@@ -343,10 +371,10 @@ def cancel_service(customer_id, request_id):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Update the service status to "Cancelled"
+        # Update the service status to "Cancelled" and set the date of completion to now
         cursor.execute('''
             UPDATE service_requests
-            SET service_status = 'Cancelled'
+            SET service_status = 'Cancelled', date_of_completion = CURRENT_TIMESTAMP
             WHERE id = ?
         ''', (request_id,))
         conn.commit()
@@ -372,7 +400,7 @@ def complete_request(request_id, pro_id):
     cursor = conn.cursor()
     
     # Update the service request status to "Completed"
-    cursor.execute('UPDATE service_requests SET service_status = "Completed" WHERE id = ?', (request_id,))
+    cursor.execute('UPDATE service_requests SET service_status = "Completed" , date_of_completion = CURRENT_TIMESTAMP WHERE id = ?', (request_id,))
     
     # Fetch the service type for the request
     cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
@@ -381,8 +409,7 @@ def complete_request(request_id, pro_id):
     conn.commit()
     conn.close()
     
-    # Redirect back to the view requests page with service type and professional ID
-    return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))
+    return redirect(url_for('close_request', service_type=service_type, pro_id=pro_id))
 
 
 
@@ -424,7 +451,7 @@ def add_service():
         conn.close()
 
         flash('Service added successfully!')
-        return redirect(url_for('admin/add_service'))
+        return redirect(url_for('add_service'))
 
     return render_template('admin/add_service.html')
 
