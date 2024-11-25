@@ -330,8 +330,13 @@ def complete_request(request_id, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Update the service request status to "Completed"
-    cursor.execute('UPDATE service_requests SET service_status = "Completed" WHERE id = ?', (request_id,))
+    # Update the service request status to "Completed" and set the date_of_completion to the current timestamp
+    cursor.execute('''
+    UPDATE service_requests 
+    SET service_status = "Completed", date_of_completion = CURRENT_TIMESTAMP 
+    WHERE id = ?
+    ''', (request_id,))
+
     
     # Fetch the service type for the request
     cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
