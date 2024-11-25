@@ -401,6 +401,26 @@ def view_professionals():
     conn.close()
     return render_template('admin/view_professionals.html', professionals=professionals)
 
+@app.route('/view-person-details', methods=['GET'])
+def view_person_details():
+    person_id = request.args.get('person_id')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
+    professional = cursor.fetchone()
+    cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
+    customer = cursor.fetchone()
+
+    conn.close()
+
+    if professional:
+        return render_template('admin/view_person_details.html', person=professional, person_type='professional')
+    elif customer:
+        return render_template('admin/view_person_details.html', person=customer, person_type='customer')
+    else:
+        return "Person not found", 404
+
 @app.route('/view-people', methods=['GET', 'POST'])
 def view_people():
     conn = get_db_connection()
