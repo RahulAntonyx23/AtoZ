@@ -11,30 +11,42 @@
     <div class="container">
         <h1 class="my-4">Service Requests</h1>
         
+        
         <h2>Requests</h2>
         {% set has_requested = requests | selectattr('status', 'equalto', 'requested') | list %}
         {% if has_requested %}
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Request ID</th>
-                        <th scope="col">Service Name</th>
-                        <th scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for request in has_requested %}
-                    <tr>
-                        <td>{{ request.id }}</td>
-                        <td>{{ request.service_name }}</td>
-                        <td>{{ request.status }}</td>
-                    </tr>
+         <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Request ID</th>
+                <th scope="col">Service Name</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in has_requested %}
+            <tr>
+                <td>{{ request.id }}</td>
+                <td>{{ request.service_name }}</td>
+                <td>{{ request.status }}</td>
+                <td>
+                    <form action="{{ url_for('cancel_service', customer_id=customer_id, request_id=request.id) }}" 
+      method="POST" 
+      style="display:inline;" 
+      onsubmit="return confirm('Are you sure you want to cancel this service?');">
+    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+</form>
+                        </td>
+                       </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
             <p class="alert alert-info">No requested services found for this customer.</p>
         {% endif %}
+
+
         
         <h2>In Progress</h2>
         {% set has_in_progress = requests | selectattr('status', 'equalto', 'In Progress') | list %}
@@ -116,6 +128,32 @@
         {% else %}
             <p class="alert alert-info">No completed services found for this customer.</p>
         {% endif %}
+
+        <h2>Cancelled</h2>
+{% set has_cancelled = requests | selectattr('status', 'equalto', 'Cancelled') | list %}
+{% if has_cancelled %}
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Request ID</th>
+                <th scope="col">Service Name</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in has_cancelled %}
+            <tr>
+                <td>{{ request.id }}</td>
+                <td>{{ request.service_name }}</td>
+                <td>{{ request.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="alert alert-info">No cancelled services found for this customer.</p>
+{% endif %}
+
     </div>
     
     <!-- Bootstrap JS -->

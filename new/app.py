@@ -160,54 +160,69 @@ def dashboard():
 def place_service_request():
     if request.method == 'GET':
         customer_id = request.args.get('customer_id')
-        print("CUSTOMER_ID is " + customer_id)
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, name FROM services')
-        services = cursor.fetchall()
+        
+        # Get customer city
+        cursor.execute('SELECT city FROM customers WHERE id = ?', (customer_id,))
+        customer_city = cursor.fetchone()[0]
+        
+        # Get professionals from the same city
+        cursor.execute('SELECT id, name, service_type, experience, description FROM professionals WHERE status = "approved" AND city = ?', (customer_city,))
+        professionals = [
+            {'id': row[0], 'name': row[1], 'service_type': row[2], 'experience': row[3], 'description': row[4]}
+            for row in cursor.fetchall()
+        ]
         conn.close()
-
-        return render_template('customer/place_service_request_order.html',customer_id=customer_id, services=services)
-
+        
+        return render_template('customer/place_service_request_order.html', customer_id=customer_id, professionals=professionals, city=customer_city)
+    
     if request.method == 'POST':
         customer_id = request.form['customer_id']
-        service_id = request.form['service_id']
+        professional_id = request.form['professional_id']
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO service_requests (service_id, customer_id) VALUES (?,?)', (service_id, customer_id))
+        
+        # Create service request
+        cursor.execute('INSERT INTO service_requests (customer_id, professional_id) VALUES (?, ?)', (customer_id, professional_id))
         conn.commit()
-            # Get the last inserted ID
-        id = cursor.lastrowid  # Assuming request_id is the primary key of the service_requests table
+        request_id = cursor.lastrowid
         conn.close()
-    
-        flash('Request Submitted Successfully!')
-    
-    # Redirect to a new page to show booking details
-        return redirect(url_for('view_booking', request_id=id))
-    
+        
+        flash('Service request successfully placed!')
+        return redirect(url_for('view_booking', request_id=request_id))
+
 @app.route('/view_booking/<int:request_id>')
 def view_booking(request_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Fetch the booking details using request_id
-    cursor.execute('SELECT sr.id, sr.service_id, sr.customer_id, s.name FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
+    # Fetch booking details
+    cursor.execute('''
+        SELECT sr.id, p.name, p.service_type, p.experience, p.description, p.city, sr.service_status
+        FROM service_requests sr
+        JOIN professionals p ON sr.professional_id = p.id
+        WHERE sr.id = ?
+    ''', (request_id,))
     booking_details = cursor.fetchone()
-    
     conn.close()
-
+    
     if booking_details:
-        # Create a dictionary or similar structure for easier access
         booking_info = {
             'request_id': booking_details[0],
-            'service_id': booking_details[1],
-            'customer_id': booking_details[2],
-            'service_name': booking_details[3]
+            'professional_name': booking_details[1],
+            'service_type': booking_details[2],
+            'experience': booking_details[3],
+            'description': booking_details[4],
+            'city': booking_details[5],
+            'service_status': booking_details[6],
         }
         return render_template('customer/booking_details.html', booking=booking_info)
     else:
         flash('Booking not found.')
-        return redirect(url_for('dashboard'))  # Redirect to a safe page if not found
+        return redirect(url_for('dashboard'))
+
+
 
 @app.route('/view_requests/<int:customer_id>')
 def view_requests(customer_id):
@@ -224,13 +239,11 @@ def view_requests(customer_id):
     ''', (customer_id,))
     requests = cursor.fetchall()
     
-    print("DEBUG: Requests fetched -", requests)  # Debugging line
-    
     requests_list = [dict(request) for request in requests]
-    print("DEBUG: Requests fetched -", requests_list)  # Debugging line
     
     conn.close()
-    return render_template('customer/view_requests.html', requests=requests)
+    return render_template('customer/view_requests.html', requests=requests_list, customer_id=customer_id)
+
 
 @app.route('/review/<int:request_id>', methods=['GET'])
 def review(request_id):
@@ -322,6 +335,34 @@ def take_request(request_id, pro_id):
     
     # Redirect back to the view requests page
     return redirect(url_for('view_request_pro', service_type=service_type, pro_id=pro_id))  # Replace with actual service type
+
+
+@app.route('/cancel_service/<int:customer_id>/<int:request_id>', methods=['POST'])
+def cancel_service(customer_id, request_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Update the service status to "Cancelled"
+        cursor.execute('''
+            UPDATE service_requests
+            SET service_status = 'Cancelled'
+            WHERE id = ?
+        ''', (request_id,))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            flash('Service request not found or could not be cancelled.', 'warning')
+        else:
+            flash('Service request successfully cancelled.', 'success')
+
+        conn.close()
+    except Exception as e:
+        flash(f'An error occurred while cancelling the service: {e}', 'danger')
+
+    # Redirect back to the view_requests page
+    return redirect(url_for('view_requests', customer_id=customer_id))
+
 
 
 

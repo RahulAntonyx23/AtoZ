@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancel Request</title>
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Cancel Service Request</h1>
+            </div>
+            <div class="card-body">
+                <p><strong>Request ID:</strong> {{ booking.request_id }}</p>
+                <p><strong>Service:</strong> {{ booking.service_type }}</p>
+                <p><strong>Professional:</strong> {{ booking.professional_name }}</p>
+                <p><strong>Status:</strong> {{ booking.service_status }}</p>
+                <form action="/cancel_request" method="POST">
+                    <input type="hidden" name="request_id" value="{{ booking.request_id }}">
+                    <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                </form>
+                <a href="{{ url_for('view_booking', request_id=booking.request_id) }}" class="btn btn-secondary mt-2">Go Back</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
