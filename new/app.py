@@ -407,19 +407,51 @@ def view_person_details():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Check if the person is a professional
     cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
     professional = cursor.fetchone()
+    print(professional)
+    print(professional.keys())  # Check what keys are in the returned Row object
+    print(professional['name'], professional['description'], professional['service_type'])
+
+
+
+    # Check if the person is a customer
     cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
     customer = cursor.fetchone()
 
-    conn.close()
-
+    # If it's a professional, get service requests they have taken up
     if professional:
-        return render_template('admin/view_person_details.html', person=professional, person_type='professional')
+        cursor.execute('''
+            SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
+                   sr.remarks, sr.service_rating, s.name as service_name 
+            FROM service_requests sr
+            JOIN services s ON sr.service_id = s.id
+            WHERE sr.professional_id = ?
+        ''', (person_id,))
+        service_requests = cursor.fetchall()
+        
+        conn.close()
+        return render_template('admin/view_person_details.html', person=professional, person_type='professional', service_requests=service_requests)
+
+    # If it's a customer, get service requests they have raised
     elif customer:
-        return render_template('admin/view_person_details.html', person=customer, person_type='customer')
+        cursor.execute('''
+            SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
+                   sr.remarks, sr.service_rating, p.name as professional_name 
+            FROM service_requests sr
+            JOIN professionals p ON sr.professional_id = p.id
+            WHERE sr.customer_id = ?
+        ''', (person_id,))
+        service_requests = cursor.fetchall()
+
+        conn.close()
+        return render_template('admin/view_person_details.html', person=customer, person_type='customer', service_requests=service_requests)
+
     else:
+        conn.close()
         return "Person not found", 404
+
 
 @app.route('/view-people', methods=['GET', 'POST'])
 def view_people():

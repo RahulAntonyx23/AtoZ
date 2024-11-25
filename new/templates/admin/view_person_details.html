@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Details</title>
+</head>
+<body>
+    <h1>{{ person['name'] }}'s Details</h1>
+
+    <p><strong>Username:</strong> {{ person['email'] if person['email'] else person['name'] }}</p>
+    <p><strong>Description:</strong> {{ person['description'] if person['description'] else 'N/A' }}</p>
+    <p><strong>Service Type:</strong> {{ person['service_type'] if person['service_type'] else 'N/A' }}</p>
+    <p><strong>Experience:</strong> {{ person['experience'] if person['experience'] else 'N/A' }} years</p>
+    
+    <h2>Service Requests</h2>
+    {% if service_requests %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Date of Request</th>
+                    <th>Date of Completion</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Rating</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                    <tr>
+                        <td>{{ request['service_name'] if person_type == 'professional' else request['professional_name'] }}</td>
+                        <td>{{ request['date_of_request'] }}</td>
+                        <td>{{ request['date_of_completion'] if request['date_of_completion'] else 'N/A' }}</td>
+                        <td>{{ request['service_status'] }}</td>
+                        <td>{{ request['remarks'] if request['remarks'] else 'N/A' }}</td>
+                        <td>{{ request['service_rating'] if request['service_rating'] else 'No Rating' }}</td>
+                        <td>{{ request['feedback'] if request['feedback'] else 'No Feedback' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No service requests found for this person.</p>
+    {% endif %}
+
+    <a href="{{ url_for('view_people') }}">Back to People List</a>
+</body>
+</html>
