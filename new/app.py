@@ -407,20 +407,12 @@ def view_person_details():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if the person is a professional
     cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
     professional = cursor.fetchone()
-    print(professional)
-    print(professional.keys())  # Check what keys are in the returned Row object
-    print(professional['name'], professional['description'], professional['service_type'])
 
-
-
-    # Check if the person is a customer
     cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
     customer = cursor.fetchone()
 
-    # If it's a professional, get service requests they have taken up
     if professional:
         cursor.execute('''
             SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
@@ -434,7 +426,6 @@ def view_person_details():
         conn.close()
         return render_template('admin/view_person_details.html', person=professional, person_type='professional', service_requests=service_requests)
 
-    # If it's a customer, get service requests they have raised
     elif customer:
         cursor.execute('''
             SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
