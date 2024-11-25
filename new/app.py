@@ -404,16 +404,22 @@ def view_professionals():
 @app.route('/view-person-details', methods=['GET'])
 def view_person_details():
     person_id = request.args.get('person_id')
+    person_type = request.args.get('person_type')
+    print(person_type)
     conn = get_db_connection()
     cursor = conn.cursor()
+    professional = None
+    customer = None
 
-    cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
-    professional = cursor.fetchone()
+    if person_type == "professional": 
+        cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
+        professional = cursor.fetchone()
+    else:
+        cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
+        customer = cursor.fetchone()
 
-    cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
-    customer = cursor.fetchone()
 
-    if professional:
+    if person_type == "professional":
         cursor.execute('''
             SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
                    sr.remarks, sr.service_rating, s.name as service_name 
@@ -426,7 +432,7 @@ def view_person_details():
         conn.close()
         return render_template('admin/view_person_details.html', person=professional, person_type='professional', service_requests=service_requests)
 
-    elif customer:
+    elif person_type == "customer":
         cursor.execute('''
             SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
                    sr.remarks, sr.service_rating, p.name as professional_name 

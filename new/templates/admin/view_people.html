@@ -80,6 +80,11 @@
                                 <input type="hidden" name="person_id" value="{{ customer['id'] }}">
                                 <button type="submit">Delete</button>
                             </form>
+                            <form method="GET" action="{{ url_for('view_person_details') }}">
+                                <input type="hidden" name="person_id" value="{{ customer['id'] }}">
+                                <input type="hidden" name="person_type" value="customer">
+                                <button style="background-color: cornflowerblue;" type="submit">View Details</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
@@ -120,6 +125,7 @@
                             </form>
                             <form method="GET" action="{{ url_for('view_person_details') }}">
                                 <input type="hidden" name="person_id" value="{{ professional['id'] }}">
+                                <input type="hidden" name="person_type" value="professional">
                                 <button style="background-color: cornflowerblue;" type="submit">View Details</button>
                             </form>
                         </td>

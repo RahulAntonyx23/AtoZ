@@ -59,9 +59,11 @@
 
     <div class="table-container">
     <p><strong>Username:</strong> {{ person['email'] if person['email'] else person['name'] }}</p>
+    {% if person_type == 'professional' %}
     <p><strong>Description:</strong> {{ person['description'] if person['description'] else 'N/A' }}</p>
     <p><strong>Service Type:</strong> {{ person['service_type'] if person['service_type'] else 'N/A' }}</p>
     <p><strong>Experience:</strong> {{ person['experience'] if person['experience'] else 'N/A' }} years</p>
+    {% endif %}
     </div>
 
     <div class="table-container">
