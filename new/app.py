@@ -399,8 +399,14 @@ def complete_request(request_id, pro_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Update the service request status to "Completed"
-    cursor.execute('UPDATE service_requests SET service_status = "Completed" , date_of_completion = CURRENT_TIMESTAMP WHERE id = ?', (request_id,))
+    # Update the service request status to "Completed" and set the date_of_completion to the current timestamp
+    cursor.execute('''
+    UPDATE service_requests 
+    SET service_status = "Completed", date_of_completion = CURRENT_TIMESTAMP 
+    WHERE id = ?
+    ''', (request_id,))
+
+
     
     # Fetch the service type for the request
     cursor.execute('SELECT s.name as service_type FROM service_requests sr JOIN services s ON sr.service_id = s.id WHERE sr.id = ?', (request_id,))
@@ -468,6 +474,55 @@ def view_professionals():
     professionals = cursor.fetchall()
     conn.close()
     return render_template('admin/view_professionals.html', professionals=professionals)
+
+@app.route('/view-person-details', methods=['GET'])
+def view_person_details():
+    person_id = request.args.get('person_id')
+    person_type = request.args.get('person_type')
+    print(person_type)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    professional = None
+    customer = None
+
+    if person_type == "professional": 
+        cursor.execute('SELECT * FROM professionals WHERE id = ?', (person_id,))
+        professional = cursor.fetchone()
+    else:
+        cursor.execute('SELECT * FROM customers WHERE id = ?', (person_id,))
+        customer = cursor.fetchone()
+
+
+    if person_type == "professional":
+        cursor.execute('''
+            SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
+                   sr.remarks, sr.service_rating, s.name as service_name 
+            FROM service_requests sr
+            JOIN services s ON sr.service_id = s.id
+            WHERE sr.professional_id = ?
+        ''', (person_id,))
+        service_requests = cursor.fetchall()
+        
+        conn.close()
+        return render_template('admin/view_person_details.html', person=professional, person_type='professional', service_requests=service_requests)
+
+    elif person_type == "customer":
+        cursor.execute('''
+            SELECT sr.id, sr.date_of_request, sr.date_of_completion, sr.service_status, 
+                   sr.remarks, sr.service_rating, p.name as professional_name 
+            FROM service_requests sr
+            JOIN professionals p ON sr.professional_id = p.id
+            WHERE sr.customer_id = ?
+        ''', (person_id,))
+        service_requests = cursor.fetchall()
+
+        conn.close()
+        return render_template('admin/view_person_details.html', person=customer, person_type='customer', service_requests=service_requests)
+
+    else:
+        conn.close()
+        return "Person not found", 404
+
 
 @app.route('/view-people', methods=['GET', 'POST'])
 def view_people():
