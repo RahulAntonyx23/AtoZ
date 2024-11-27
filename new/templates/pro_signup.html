@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Professional</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Add a New Professional</h1>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                            <label for="city">City:</label>
+                                 <select class="form-control" id="city" name="city" required>
+                                  <option value="Bangalore">Bangalore</option>
+                                  <option value="Chennai">Chennai</option>
+                                  <option value="Mumbai">Mumbai</option>
+                                   <option value="Kolkata">Kolkata</option>
+                                  <option value="Delhi">Delhi</option>
+                                 <option value="Gurgaon">Gurgaon</option>
+                              </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="service_type">Service Type:</label>
+                        <select class="form-control" id="service_type" name="service_type" required>
+                            {% for service in services %}
+                                <option value="{{ service['name'] }}">{{ service['name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Experience (years):</label>
+                        <input type="number" class="form-control" id="experience" name="experience" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Professional</button>
+                </form>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-info mt-3">
+                            <ul>
+                                {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

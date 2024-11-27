@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Requests for {{ service_type }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Close Requests</h1>
+            </div>
+            <div class="card-body">
+                {% if requests %}
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Request ID</th>
+                                <th scope="col">Service Name</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in requests %}
+                            <tr>
+                                <td>{{ request.id }}</td>
+                                <td>{{ request.service_name }}</td>
+                                <td>{{ request.service_status }}</td>
+                                <td>
+                                    <form action="{{ url_for('complete_request', request_id=request.id, pro_id=pro_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-primary">Close Request</button>
+                                    </form>
+                                    
+                                    
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="alert alert-info">No Active Services</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,28 +6,44 @@
     <title>Place Service Request</title>
     <!-- Bootstrap CSS -->
     <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <script>
+        function filterProfessionals() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let cards = document.querySelectorAll('.professional-card');
+
+            cards.forEach(card => {
+                let serviceType = card.getAttribute('data-service-type').toLowerCase();
+                if (serviceType.includes(input)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="container mt-5">
-        <div class="card">
-            <div class="card-header">
-                <h1 class="card-title">Place Service Request</h1>
-            </div>
-            <div class="card-body">
-                <form action="/place_service_request" method="POST">
-                    <p class="card-text">Hello {{ customer_name }}</p>
-                    <div class="form-group">
-                        <label for="service">Type of Service Required:</label>
-                        <select class="form-control" id="service" name="service_id">
-                            {% for service in services %}
-                                <option value="{{ service[0] }}">{{ service[1] }}</option>
-                            {% endfor %}
-                        </select>
+        <h1>Services Available in {{ city }}</h1>
+        <input type="text" id="search" onkeyup="filterProfessionals()" class="form-control my-3" placeholder="Search by service type...">
+        <div class="row">
+            {% for professional in professionals %}
+                <div class="col-md-4 mb-4 professional-card" data-service-type="{{ professional['service_type'] }}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ professional['name'] }}</h5>
+                            <p class="card-text"><strong>Service Type:</strong> {{ professional['service_type'] }}</p>
+                            <p class="card-text"><strong>Experience:</strong> {{ professional['experience'] }} years</p>
+                            <p class="card-text"><strong>Description:</strong> {{ professional['description'] }}</p>
+                            <form action="/place_service_request" method="POST">
+                                <input type="hidden" name="customer_id" value="{{ customer_id }}">
+                                <input type="hidden" name="professional_id" value="{{ professional['id'] }}">
+                                <button type="submit" class="btn btn-primary">Book Service</button>
+                            </form>
+                        </div>
                     </div>
-                    <input type="hidden" name="customer_id" value="{{ customer_id }}">
-                    <button type="submit" class="btn btn-primary">Submit New Request</button>
-                </form>
-            </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </body>
