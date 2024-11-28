@@ -51,11 +51,23 @@
         button:hover {
             background-color: #c82333;
         }
+        .action-bar {
+            display: flex;
+            flex-direction: row-reverse;
+            padding: 0 50px;
+        }
+        .action-bar span {
+            margin: 10px 20px;
+            width: 150px;
+        }
+        
     </style>
 </head>
 <body>
     <div class="container">
     <h1>{{ person['name'] }}'s Details</h1>
+    <h2>User Type : {{ person_type }}</h2>
+
 
     <div class="table-container">
     <p><strong>Username:</strong> {{ person['email'] if person['email'] else person['name'] }}</p>
@@ -99,7 +111,16 @@
         <p>No service requests found for this person.</p>
     {% endif %}
 
-    <a href="{{ url_for('view_people') }}">Back to People List</a>
+    <div class="action-bar">
+        <span><a href="{{ url_for('view_people') }}">Back to People List</a></span>
+        <span>
+            <form method="POST" action="{{ url_for('view_people') }}">
+            <input type="hidden" name="person_type" value="{{ person_type }}">
+            <input type="hidden" name="person_id" value="{{ person['id'] }}">
+            <button type="submit">Delete</button>
+            </form>
+        </span>
+    </div>
     </div>
 </div>
 </body>
