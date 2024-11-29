@@ -96,7 +96,7 @@
                         <td>{{ request.service_name }}</td>
                         <td>{{ request.status }}</td>
                         <td>{{ request.professional_name }}</td>
-                        <td>{{ request.date_completed }}</td>
+                        <td>{{ request.date_of_completion }}</td>
                         <td>
                             {% if request.rating == 0 %}
                                 <a class="btn btn-primary" href="{{ url_for('review', request_id=request.id) }}">

@@ -238,7 +238,7 @@ def view_requests(customer_id):
     
     # Fetch all service requests for the given customer_id
     cursor.execute('''
-        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id, sr.service_status as status, sr.service_rating as rating, p.name as professional_name
+        SELECT sr.id, sr.service_id, s.name as service_name, sr.customer_id, sr.service_status as status, sr.service_rating as rating, sr.date_of_completion, p.name as professional_name
         FROM service_requests sr
         JOIN services s ON sr.service_id = s.id
         LEFT JOIN professionals p ON sr.professional_id = p.id
@@ -247,6 +247,7 @@ def view_requests(customer_id):
     requests = cursor.fetchall()
     
     requests_list = [dict(request) for request in requests]
+    print(requests_list)
     
     conn.close()
     return render_template('customer/view_requests.html', requests=requests_list, customer_id=customer_id)

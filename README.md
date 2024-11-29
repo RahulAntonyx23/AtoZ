@@ -44,6 +44,6 @@
 Create a new virtual env and activate the same (Optional)
 0. Navigate into the `code` folder
 1. Install all dependencies from 'requirements.txt' -> run `pip install -r requirements.txt`
-2. Run the setup_database.py file to create a database if it doesnt exist (app_database.db) ->  python `setup_database.py`
-3. run `app.py`-> python `app.py`
+2. Run the setup_database.py file to create a database if it doesnt exist (app_database.db) ->  `python setup_database.py`
+3. run `app.py`-> `python app.py`
 4. Visit `http://127.0.0.1:5000` to see the code live
