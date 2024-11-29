@@ -8,9 +8,9 @@ app.secret_key = 'your_secret_key'
 Bootstrap(app)
   
 
-# Database connection function
+# Database connection
 def get_db_connection():
-    conn = sqlite3.connect('your_database.db')
+    conn = sqlite3.connect('app_database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -557,6 +557,7 @@ def view_services():
     return render_template('view_services.html', services=services)
 
 
+# For testing database connectivity for troubleshooting
 @app.route('/test-db')
 def test_db():
     conn = get_db_connection()

@@ -1,7 +1,7 @@
 import sqlite3
 
 # Connect to the SQLite database (it will create the file if it doesn't exist)
-conn = sqlite3.connect('your_database.db')
+conn = sqlite3.connect('app_database.db')
 
 # Create a cursor object
 cursor = conn.cursor()
@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    city TEXT
 );
 ''')
 
@@ -32,7 +33,9 @@ CREATE TABLE IF NOT EXISTS professionals (
     description TEXT,
     service_type TEXT NOT NULL,
     experience INTEGER,
-    status TEXT DEFAULT 'pending'
+    status TEXT DEFAULT 'pending',
+    password TEXT, 
+    city TEXT
 );
 ''')
 
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     date_of_completion DATETIME,
     service_status TEXT DEFAULT 'requested',
     remarks TEXT,
+    service_rating INTEGER DEFAULT 0,
     FOREIGN KEY (service_id) REFERENCES services (id),
     FOREIGN KEY (customer_id) REFERENCES customers (id),
     FOREIGN KEY (professional_id) REFERENCES professionals (id)
