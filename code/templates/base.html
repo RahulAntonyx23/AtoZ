@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtoZ Services</title>
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container text-center mt-5">
+        <h1 class="mb-4">AtoZ Services</h1>
+        
+        <h2 class="my-4">Customer Login</h2>
+        <a href="/login-customer" class="btn btn-primary mb-3">Login</a>
+        
+        <h2 class="my-4">Admin Login</h2>
+        <a href="/login-admin" class="btn btn-primary mb-3">Login</a>
+        
+        <h2 class="my-4">Professional Login</h2>
+        <a href="/login-pro" class="btn btn-primary">Login</a>
+    </div>
+</body>
+</html>
